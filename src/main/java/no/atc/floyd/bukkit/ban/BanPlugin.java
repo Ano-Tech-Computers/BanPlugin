@@ -33,7 +33,12 @@ import java.sql.*;
 * @author FloydATC
 */
 public class BanPlugin extends JavaPlugin implements Listener {
-    
+
+	public static final String MSG_PREFIX = ChatColor.GRAY + "[" + ChatColor.GOLD + "Ban" + ChatColor.GRAY + "] ";
+	public static final ChatColor COLOR_INFO = ChatColor.AQUA;
+	public static final ChatColor COLOR_WARNING = ChatColor.RED;
+	public static final ChatColor COLOR_NAME = ChatColor.GOLD;
+	
     private final ConcurrentHashMap<Player, Boolean> debugees = new ConcurrentHashMap<Player, Boolean>();
     public final ConcurrentHashMap<String, String> settings = new ConcurrentHashMap<String, String>();
 
@@ -91,12 +96,12 @@ public class BanPlugin extends JavaPlugin implements Listener {
         	// Reload
     		if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
     			if (player == null || player.isOp() || player.hasPermission("BanPlugin.reload")) {
-        			respond(player, "�7[�6Ban�7]�a Reloading configuration file");
+        			respond(player, MSG_PREFIX+COLOR_INFO+"Reloading configuration file");
         			loadSettings();
         			initDbPool();
         			return true;
         		} else {
-        			logger.info("[Ban] "+pname+" tried to reload but does not have permission");
+        			logger.info(MSG_PREFIX+COLOR_WARNING+pname+" tried to reload but does not have permission");
         			return true;
         		}
         	}
@@ -107,7 +112,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
         	// Warn player 
         	if (player == null || player.isOp() || player.hasPermission("BanPlugin.warn")) {
             	if (args.length < 1) {
-        			respond(player, "�7[�6Ban�7]�a Need player name and a reason");
+        			respond(player, MSG_PREFIX+COLOR_WARNING+"Need player name and a reason");
         			return false;
             	}
             	Player p = null;
@@ -121,16 +126,16 @@ public class BanPlugin extends JavaPlugin implements Listener {
             	}
             	p = getServer().getPlayer(p_name);
             	if (p != null) {
-            		respond(player, "�7[�6Ban�7]�a Warned "+p.getName());
-            		respond(p, "�7[�6Ban�7]�c YOU HAVE BEEN WARNED, FOLLOW THE RULES OR LEAVE");
+            		respond(player, MSG_PREFIX+COLOR_INFO+"Warned "+COLOR_PLAYER+p.getName());
+            		respond(p, MSG_PREFIX+COLOR_WARNING+"YOU HAVE BEEN WARNED, FOLLOW THE RULES OR LEAVE");
             		if (!reason.isEmpty()) {
-            			respond(p, "�7[�6Ban�7]�c "+reason);
-            			logger.info("[Ban] "+pname+" warned "+p.getName()+": "+reason);
+            			respond(p, MSG_PREFIX+reason);
+            			logger.info(MSG_PREFIX+COLOR_PLAYER+pname+COLOR_INFO+" warned "+COLOR_PLAYER+p.getName()+COLOR_INFO+": "+reason);
             		} else {
-            			logger.info("[Ban] "+pname+" warned "+p.getName());
+            			logger.info(MSG_PREFIX+COLOR_PLAYER+pname+COLOR_INFO+" warned "+COLOR_PLAYER+p.getName());
             		}
             	} else {
-            		respond(player, "�7[�6Ban�7]�a Not logged in: "+p_name);
+            		respond(player, MSG_PREFIX+COLOR_WARNING+"Not logged in: "+COLOR_PLAYER+p_name);
             	}
         	}
         	return true;
@@ -140,7 +145,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
         	// Kick player
         	if (player == null || player.isOp() || player.hasPermission("BanPlugin.kick")) {
             	if (args.length < 1) {
-        			respond(player, "�7[�6Ban�7]�a Need player name and a reason");
+        			respond(player, MSG_PREFIX+COLOR_WARNING+"Need player name and a reason");
         			return false;
             	}
             	Player p = null;
@@ -154,16 +159,16 @@ public class BanPlugin extends JavaPlugin implements Listener {
             	}
             	p = getServer().getPlayer(p_name);
             	if (p != null) {
-            		respond(player, "�7[�6Ban�7]�a Kicked "+p.getName());
+            		respond(player, MSG_PREFIX+COLOR_INFO+"Kicked "+COLOR_PLAYER+p.getName());
             		if (!reason.isEmpty()) {
-            			p.kickPlayer("Kicked by "+pname+": "+reason);
-            			logger.info("[Ban] "+pname+" kicked "+p.getName()+": "+reason);
+            			p.kickPlayer("Kicked by "+COLOR_PLAYER+pname+COLOR_INFO+": "+reason);
+            			logger.info(MSG_PREFIX+COLOR_PLAYER+pname+COLOR_INFO+" kicked "+COLOR_PLAYER+p.getName()+COLOR_INFO+": "+reason);
             		} else {
-            			p.kickPlayer("Kicked by "+player.getName());
-            			logger.info("[Ban] "+pname+" kicked "+p.getName());
+            			p.kickPlayer("Kicked by "+COLOR_PLAYER+player.getName());
+            			logger.info(MSG_PREFIX+COLOR_PLAYER+pname+COLOR_INFO+" kicked "+COLOR_PLAYER+p.getName());
             		}
             	} else {
-            		respond(player, "�7[�6Ban�7]�a Not logged in: "+p_name);
+            		respond(player, MSG_PREFIX+COLOR_WARNING+"Not logged in: "+COLOR_PLAYER+p_name);
             	}
         	}
         	return true;
@@ -173,7 +178,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
         	// Permanently ban named player by name (and if possible, UUID and IP)
         	if (player == null || player.isOp() || player.hasPermission("BanPlugin.permban")) {
             	if (args.length < 2) {
-        			respond(player, "�7[�6Ban�7]�a Need player name and a reason");
+        			respond(player, MSG_PREFIX+COLOR_WARNING+"Need player name and a reason");
         			return false;
             	}
             	Player p = null;
@@ -185,7 +190,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
             	}
             	p = getServer().getPlayerExact(p_name);
         		if (dbpool == null) {
-        			logger.info("[Ban] Retrying dbpool initialization...");
+        			logger.info(MSG_PREFIX+COLOR_INFO+"Retrying dbpool initialization...");
         			initDbPool();
         		}
 	       	    if (dbpool != null) { 
@@ -199,19 +204,19 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	                		p_ip = p.getAddress().getAddress().getHostAddress();
 	                	}
 	       	        	permBan(dbh, p_name, p_uuid, p_ip, pname, reason);
-	        			respond(player, "�7[�6Ban�7]�a "+p_name+" permanently banned");
+	        			respond(player, MSG_PREFIX+COLOR_PLAYER+p_name+COLOR_INFO+" permanently banned");
 	       	        	if (p != null) {
-		        			logger.warning("[Ban] Kickbanned player "+p_name);
-	       	        		p.kickPlayer("Banned by "+player+": "+reason);
+		        			logger.warning(MSG_PREFIX+COLOR_INFO+"Kickbanned player "+COLOR_PLAYER+p_name);
+	       	        		p.kickPlayer("Banned by "+COLOR_PLAYER+player+COLOR_INFO+": "+reason);
 	       	        	}
 		       	        dbpool.releaseConnection(dbh);
 	       	        } else {
-	        			logger.warning("[Ban] permban: dbh unavailable");
-	        			respond(player, "�7[�6Ban�7]�a Sorry, dbh unavailable");
+	        			logger.warning(MSG_PREFIX+COLOR_WARNING+"permban: dbh unavailable");
+	        			respond(player, MSG_PREFIX+COLOR_WARNING+"Sorry, dbh unavailable");
 	       	        }
         		} else {
-        			logger.warning("[Ban] permban: dbpool unavailable");
-        			respond(player, "�7[�6Ban�7]�a Sorry, dbpool unavailable");
+        			logger.warning(MSG_PREFIX+COLOR_WARNING+"permban: dbpool unavailable");
+        			respond(player, MSG_PREFIX+COLOR_WARNING+"Sorry, dbpool unavailable");
         		}
         	}
         	return true;
@@ -221,7 +226,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
         	// Temporarily ban named player by name and UUID
         	if (player == null || player.isOp() || player.hasPermission("BanPlugin.tempban")) {
             	if (args.length < 3) {
-        			respond(player, "�7[�6Ban�7]�a Need player name, duration and a reason");
+        			respond(player, MSG_PREFIX+COLOR_WARNING+"Need player name, duration and a reason");
         			return false;
             	}
             	Player p = null;
@@ -256,11 +261,11 @@ public class BanPlugin extends JavaPlugin implements Listener {
             		if (valid == true) {
             			expires = template.format(cal.getTime());
             		} else {
-            			respond(player, "�7[�6Ban�7]�a Duration must be an integer immediately followed by 'h', 'd' or 'w'.");
+            			respond(player, MSG_PREFIX+COLOR_WARNING+"Duration must be an integer immediately followed by 'h', 'd' or 'w'.");
             			return false;
             		}
             	} else {
-        			respond(player, "�7[�6Ban�7]�a Duration must be an integer immediately followed by 'h', 'd' or 'w'.");
+        			respond(player, MSG_PREFIX+COLOR_WARNING+"Duration must be an integer immediately followed by 'h', 'd' or 'w'.");
         			return false;
             	}
             	
@@ -271,7 +276,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
             	}
             	p = getServer().getPlayerExact(p_name);
         		if (dbpool == null) {
-        			logger.info("[Ban] Retrying dbpool initialization...");
+        			logger.info(MSG_PREFIX+COLOR_WARNING+"Retrying dbpool initialization...");
         			initDbPool();
         		}
 	       	    if (dbpool != null) { 
@@ -285,19 +290,19 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	                		p_ip = p.getAddress().getAddress().getHostAddress();
 	                	}
 	       	        	tempBan(dbh, p_name, p_uuid, p_ip, pname, reason, expires);
-	        			respond(player, "�7[�6Ban�7]�a "+p_name+" banned until "+expires);
+	        			respond(player, MSG_PREFIX+COLOR_PLAYER+p_name+COLOR_INFO+" banned until "+expires);
 	       	        	if (p != null) {
-		        			logger.warning("[Ban] Kickbanned player "+p_name);
-	       	        		p.kickPlayer("Banned until "+duration+" by "+player+": "+reason);
+		        			logger.warning(MSG_PREFIX+COLOR_INFO+"Kickbanned player "+COLOR_PLAYER+p_name);
+	       	        		p.kickPlayer("Banned until "+duration+" by "+COLOR_PLAYER+player+COLOR_INFO+": "+reason);
 	       	        	}
 		       	        dbpool.releaseConnection(dbh);
 	       	        } else {
-	        			logger.warning("[Ban] tempban: dbh unavailable");
-	        			respond(player, "�7[�6Ban�7]�a Sorry, dbh unavailable");
+	        			logger.warning(MSG_PREFIX+COLOR_WARNING+"tempban: dbh unavailable");
+	        			respond(player, MSG_PREFIX+COLOR_WARNING+"Sorry, dbh unavailable");
 	       	        }
         		} else {
-        			logger.warning("[Ban] tempban: dbpool unavailable");
-        			respond(player, "�7[�6Ban�7]�a Sorry, dbpool unavailable");
+        			logger.warning(MSG_PREFIX+COLOR_WARNING+"tempban: dbpool unavailable");
+        			respond(player, MSG_PREFIX+COLOR_WARNING+"Sorry, dbpool unavailable");
         		}
         	}
         	return true;
@@ -307,7 +312,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
         	// Pardon named player by name and UUID
         	if (player == null || player.isOp() || player.hasPermission("BanPlugin.unban")) {
             	if (args.length < 2) {
-        			respond(player, "�7[�6Ban�7]�a Need player name and a reason");
+        			respond(player, MSG_PREFIX+COLOR_WARNING+"Need player name and a reason");
         			return false;
             	}
             	String p_name = args[0];
@@ -317,7 +322,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
             		reason = reason + args[i];
             	}
         		if (dbpool == null) {
-        			logger.info("[Ban] Retrying dbpool initialization...");
+        			logger.info(MSG_PREFIX+COLOR_WARNING+"Retrying dbpool initialization...");
         			initDbPool();
         		}
 	       	    if (dbpool != null) { 
@@ -326,15 +331,15 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	                	String p_uuid = uuid_by_name(dbh, p_name);
 	                	String p_ip = ip_by_name(dbh, p_name);
 	       	        	unBan(dbh, p_name, p_uuid, p_ip, pname, reason);
-	        			respond(player, "�7[�6Ban�7]�a "+p_name+" pardoned");
+	        			respond(player, MSG_PREFIX+COLOR_PLAYER+p_name+COLOR_INFO+" pardoned");
 		       	        dbpool.releaseConnection(dbh);
 	       	        } else {
-	        			logger.warning("[Ban] unban: dbh unavailable");
-	        			respond(player, "�7[�6Ban�7]�a Sorry, dbh unavailable");
+	        			logger.warning(MSG_PREFIX+COLOR_WARNING+"unban: dbh unavailable");
+	        			respond(player, MSG_PREFIX+COLOR_WARNING+"Sorry, dbh unavailable");
 	       	        }
         		} else {
-        			logger.warning("[Ban] unban: dbpool unavailable");
-        			respond(player, "�7[�6Ban�7]�a Sorry, dbpool unavailable");
+        			logger.warning(MSG_PREFIX+COLOR_WARNING+"unban: dbpool unavailable");
+        			respond(player, MSG_PREFIX+COLOR+WARNING+"Sorry, dbpool unavailable");
         		}
         	}
         	return true;
@@ -344,12 +349,12 @@ public class BanPlugin extends JavaPlugin implements Listener {
         	// Check active bans on a named player
         	if (player == null || player.isOp() || player.hasPermission("BanPlugin.checkban")) {
             	if (args.length != 1) {
-        			respond(player, "�7[�6Ban�7]�a Need player name");
+        			respond(player, MSG_PREFIX+COLOR_WARNING+"Need player name");
         			return false;
             	}
             	String p_name = args[0];
         		if (dbpool == null) {
-        			logger.info("[Ban] Retrying dbpool initialization...");
+        			logger.info(MSG_PREFIX+COLOR_WARNING+"Retrying dbpool initialization...");
         			initDbPool();
         		}
 	       	    if (dbpool != null) { 
@@ -368,24 +373,24 @@ public class BanPlugin extends JavaPlugin implements Listener {
 		           			while (result.next()) {
 		           				count++;
 		           				if (result.getString("type").equalsIgnoreCase("permban")) {
-		                			respond(player, "�7[�6Ban�7]�a "+result.getString("player_name")+" banned by "+result.getString("issued_by")+": "+result.getString("reason"));
+		                			respond(player, MSG_PREFIX+COLOR_PLAYER+result.getString("player_name")+COLOR_INFO+" banned by "+COLOR_PLAYER+result.getString("issued_by")+COLOR_INFO+": "+result.getString("reason"));
 		           					continue;
 		           				}
 		           				if (result.getString("type").equalsIgnoreCase("tempban")) {
-		                			respond(player, "�7[�6Ban�7]�a "+result.getString("player_name")+" banned by "+result.getString("issued_by")+" until "+result.getString("expires")+": "+result.getString("reason"));
+		                			respond(player, MSG_PREFIX+COLOR_PLAYER+result.getString("player_name")+COLOR_INFO+" banned by "+COLOR_PLAYER+result.getString("issued_by")+COLOR_INFO+" until "+result.getString("expires")+": "+result.getString("reason"));
 		           					continue;
 		           				}
 		           				if (result.getString("type").equalsIgnoreCase("unban")) {
-		                			respond(player, "�7[�6Ban�7]�a "+result.getString("player_name")+" unbanned by "+result.getString("issued_by")+": "+result.getString("reason"));
+		                			respond(player, MSG_PREFIX+COLOR_PLAYER+result.getString("player_name")+COLOR_INFO+" unbanned by "+COLOR_PLAYER+result.getString("issued_by")+COLOR_INFO+": "+result.getString("reason"));
 		           					continue;
 		           				}
 		           			}
 		           			if (count == 0) {
-	                			respond(player, "�7[�6Ban�7]�a "+p_name+" is not banned");
+	                			respond(player, MSG_PREFIX+COLOR_PLAYER+p_name+COLOR_INFO+" is not banned");
 		           			}
 		        		} catch (SQLException e) {
 		        			e.printStackTrace();
-		        			logger.warning("[Ban] SQL error: "+e.getLocalizedMessage());
+		        			logger.warning(MSG_PREFIX+COLOR_WARNING+"SQL error: "+e.getLocalizedMessage());
 		        		}
 		       	        dbpool.releaseConnection(dbh);
 	       	        }
@@ -404,11 +409,11 @@ public class BanPlugin extends JavaPlugin implements Listener {
     	String p_uuid = p.getUniqueId().toString();
     	String p_ip = event.getAddress().getHostAddress();
 
-		logger.warning("[Ban] Checking status of player "+p_name+" ("+p_ip+")");
+		logger.warning(MSG_PREFIX+COLOR_INFO+"Checking status of player "+COLOR_PLAYER+p_name+COLOR_INFO+" ("+p_ip+")");
 		
     	String message = null;
 		if (dbpool == null) {
-			logger.info("[Ban] Retrying dbpool initialization...");
+			logger.info(MSG_PREFIX+COLOR_WARNING+"Retrying dbpool initialization...");
 			initDbPool();
 		}
    	    if (dbpool != null) { 
@@ -419,12 +424,12 @@ public class BanPlugin extends JavaPlugin implements Listener {
    	        }
    	    }
    	    if (message != null) {
-			logger.warning("[Ban] Rejecting "+p_name+": "+message);
+			logger.warning(MSG_PREFIX+COLOR_WARNING+"Rejecting "+COLOR_PLAYER+p_name+COLOR_WARNING+": "+message);
    	    	event.setKickMessage(message);
    	    	event.setResult(Result.KICK_BANNED);
 			return;
    	    }
-		logger.warning("[Ban] Cleared "+p_name);
+		logger.warning(MSG_PREFIX+COLOR_INFO+"Cleared "+COLOR_PLAYER+p_name);
     }
 
     private void initDbPool() {
@@ -437,7 +442,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	    		Integer.valueOf(settings.get("db_max"))
 	    	);
     	} catch (RuntimeException e) {
-    		logger.warning("[Ban] Init error: "+e.getLocalizedMessage());
+    		logger.warning(MSG_PREFIX+COLOR_WARNING+"Init error: "+e.getLocalizedMessage());
     	}
     }
     
@@ -483,7 +488,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
     		input.close();
     	}
     	catch (FileNotFoundException e) {
-			logger.warning( "[Ban] Error reading " + e.getLocalizedMessage() + ", using defaults" );
+			logger.warning( MSG_PREFIX+COLOR_WARNING+"Error reading " + e.getLocalizedMessage() + ", using defaults" );
     	}
     	catch (Exception e) {
     		e.printStackTrace();
@@ -512,17 +517,17 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	          "  'permban', ?, ?, ?, ?, ?" +
 	          ")"
 	        );
-   			logger.info("[Ban] "+p_name+", "+p_uuid+", "+p_ip+", "+op+", "+reason);
+   			logger.info(MSG_PREFIX+""+p_name+", "+p_uuid+", "+p_ip+", "+op+", "+reason);
    			sth.setNString(1, p_name);
    			sth.setNString(2, p_uuid);
    			sth.setNString(3, p_ip);
    			sth.setNString(4, op);
    			sth.setNString(5, reason);
    			sth.executeUpdate();
-   			logger.info("[Ban] Permanent: "+p_name+" issued by "+op+" ("+reason+")");
+   			logger.info(MSG_PREFIX+COLOR_INFO+"Permanent: "+COLOR_PLAYER+p_name+COLOR_INFO+" issued by "+COLOR_PLAYER+op+COLOR_INFO+" ("+reason+")");
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.warning("[Ban] SQL error: "+e.getLocalizedMessage());
+			logger.warning(MSG_PREFIX+COLOR_WARNING+"SQL error: "+e.getLocalizedMessage());
 			return false;
 		}
     	return true;
@@ -538,7 +543,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	          "  'tempban', ?, ?, ?, ?, ?, ?" +
 	          ")"
 	        );
-   			logger.info("[Ban] "+p_name+", "+p_uuid+", "+p_ip+", "+op+", "+reason+", "+expires);
+   			logger.info(MSG_PREFIX+""+p_name+", "+p_uuid+", "+p_ip+", "+op+", "+reason+", "+expires);
    			sth.setNString(1, p_name);
    			sth.setNString(2, p_uuid);
    			sth.setNString(3, p_ip);
@@ -546,10 +551,10 @@ public class BanPlugin extends JavaPlugin implements Listener {
    			sth.setNString(5, reason);
    			sth.setNString(6, expires);
    			sth.executeUpdate();
-   			logger.info("[Ban] Temporary: "+p_name+" until "+expires+" issued by "+op+" ("+reason+")");
+   			logger.info(MSG_PREFIX+COLOR_INFO+"Temporary: "+COLOR_PLAYER+p_name+COLOR_INFO+" until "+expires+" issued by "+COLOR_PLAYER+op+COLOR_INFO+" ("+reason+")");
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.warning("[Ban] SQL error: "+e.getLocalizedMessage());
+			logger.warning(MSG_PREFIX+COLOR_WARNING+"SQL error: "+e.getLocalizedMessage());
 			return false;
 		}
     	return true;
@@ -571,10 +576,10 @@ public class BanPlugin extends JavaPlugin implements Listener {
    			sth.setNString(4, op);
    			sth.setNString(5, reason);
    			sth.executeUpdate();
-   			logger.info("[Ban] Pardon: "+p_name+" issued by "+op+" ("+reason+")");
+   			logger.info(MSG_PREFIX+COLOR_INFO+"Pardon: "+COLOR_PLAYER+p_name+COLOR_INFO+" issued by "+COLOR_PLAYER+op+COLOR_INFO+" ("+reason+")");
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.warning("[Ban] SQL error: "+e.getLocalizedMessage());
+			logger.warning(MSG_PREFIX+COLOR_WARNING+"SQL error: "+e.getLocalizedMessage());
 			return false;
 		}
     	return true;
@@ -597,7 +602,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
    			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.warning("[Ban] (uuid_by_name) SQL error: "+e.getLocalizedMessage());
+			logger.warning(MSG_PREFIX+COLOR_WARNING+"(uuid_by_name) SQL error: "+e.getLocalizedMessage());
 		}
     	return "";
     }
@@ -619,7 +624,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
    			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.warning("[Ban] (uuid_by_name) SQL error: "+e.getLocalizedMessage());
+			logger.warning(MSG_PREFIX+COLOR_WARNING+"(uuid_by_name) SQL error: "+e.getLocalizedMessage());
 		}
     	return "";
     }
@@ -644,7 +649,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	        
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.warning("[Ban] (trace) SQL error: "+e.getLocalizedMessage());
+			logger.warning(MSG_PREFIX+COLOR_WARNING+"(trace) SQL error: "+e.getLocalizedMessage());
     	}
     	
     	// Update legacy records (this MAY be incorrect but it's the lesser of two evils)
@@ -664,7 +669,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	        
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.warning("[Ban] (update) SQL error: "+e.getLocalizedMessage());
+			logger.warning(MSG_PREFIX+COLOR_WARNING+"(update) SQL error: "+e.getLocalizedMessage());
     	}
     	
     	
@@ -682,23 +687,23 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	        );
 	        Integer i = 1;
 //	        if (settings.get("enforce_name").equalsIgnoreCase("yes")) {
-//        	logger.info("[Ban] (check) Enforcing name bans");
+//        	logger.info(MSG_PREFIX+"(check) Enforcing name bans");
 //	        	sth.setNString(i, p_name);
 //	        	i++;
 //	        }
 	        if (settings.get("enforce_uuid").equalsIgnoreCase("yes")) {
-	        	logger.info("[Ban] (check) Enforcing uuid bans");
+	        	logger.info(MSG_PREFIX+COLOR_INFO+"(check) Enforcing uuid bans");
 	        	sth.setNString(i, p_uuid);
 	        	i++;
 	        }
 	        if (settings.get("enforce_ip").equalsIgnoreCase("yes")) {
-	        	logger.info("[Ban] (check) Enforcing ip bans");
+	        	logger.info(MSG_PREFIX+COLOR_INFO+"(check) Enforcing ip bans");
 	        	sth.setNString(i, p_ip);
 	        	i++;
 	        }
    			ResultSet result = sth.executeQuery();
    			while (result.next()) {
-   				logger.info("[Ban] (check) found "+result.getString("type")+" for "+result.getString("player_name")+" uuid="+result.getString("player_uuid")+" ip="+result.getString("player_ip"));
+   				logger.info(MSG_PREFIX+COLOR_INFO+"(check) found "+result.getString("type")+" for "+COLOR_PLAYER+result.getString("player_name")+COLOR_INFO+" uuid="+result.getString("player_uuid")+" ip="+result.getString("player_ip"));
    				if (result.getString("type").equalsIgnoreCase("permban")) {
    					message = "Banned by "+result.getString("issued_by")+": "+result.getString("reason");
    					permanent = true;
@@ -717,7 +722,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
    			return message;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			logger.warning("[Ban] (check) SQL error: "+e.getLocalizedMessage());
+			logger.warning(MSG_PREFIX+COLOR_WARNING+"(check) SQL error: "+e.getLocalizedMessage());
 		}
 		
     	return null;
