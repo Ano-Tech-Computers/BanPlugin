@@ -83,7 +83,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
 		logger.info( pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled!" );
     }
 
-    public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args ) {
+	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args ) {
     	String cmdname = cmd.getName().toLowerCase();
         Player player = null;
         String pname = "(Console)";
@@ -208,7 +208,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	       	        	permBan(dbh, p_name, p_uuid, p_ip, pname, reason);
 	        			respond(player, MSG_PREFIX+COLOR_NAME+p_name+COLOR_INFO+" permanently banned");
 	       	        	if (p != null) {
-		        			logger.warning("[Ban] "+"Kickbanned player "+COLOR_NAME+p_name);
+		        			logger.warning("[Ban] "+"Kickbanned player "+p_name);
 	       	        		p.kickPlayer("Banned by "+COLOR_NAME+player+COLOR_INFO+": "+reason);
 	       	        	}
 		       	        dbpool.releaseConnection(dbh);
@@ -294,7 +294,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	       	        	tempBan(dbh, p_name, p_uuid, p_ip, pname, reason, expires);
 	        			respond(player, MSG_PREFIX+COLOR_NAME+p_name+COLOR_INFO+" banned until "+expires);
 	       	        	if (p != null) {
-		        			logger.warning("[Ban] "+"Kickbanned player "+COLOR_NAME+p_name);
+		        			logger.warning("[Ban] "+"Kickbanned player "+p_name);
 	       	        		p.kickPlayer("Banned until "+duration+" by "+COLOR_NAME+player+COLOR_INFO+": "+reason);
 	       	        	}
 		       	        dbpool.releaseConnection(dbh);
@@ -411,7 +411,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
     	String p_uuid = p.getUniqueId().toString();
     	String p_ip = event.getAddress().getHostAddress();
 
-		logger.warning("[Ban] "+"Checking status of player "+COLOR_NAME+p_name+COLOR_INFO+" ("+p_ip+")");
+		logger.warning("[Ban] "+"Checking status of player "+p_name+" ("+p_ip+")");
 		
     	String message = null;
 		if (dbpool == null) {
@@ -426,12 +426,12 @@ public class BanPlugin extends JavaPlugin implements Listener {
    	        }
    	    }
    	    if (message != null) {
-			logger.warning("[Ban] "+"Rejecting "+COLOR_NAME+p_name+COLOR_WARNING+": "+message);
+			logger.warning("[Ban] "+"Rejecting "+p_name+": "+message);
    	    	event.setKickMessage(message);
    	    	event.setResult(Result.KICK_BANNED);
 			return;
    	    }
-		logger.warning("[Ban] "+"Cleared "+COLOR_NAME+p_name);
+		logger.warning("[Ban] "+"Cleared "+p_name);
     }
 
     private void initDbPool() {
@@ -526,7 +526,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
    			sth.setNString(4, op);
    			sth.setNString(5, reason);
    			sth.executeUpdate();
-   			logger.info("[Ban] "+"Permanent: "+COLOR_NAME+p_name+COLOR_INFO+" issued by "+COLOR_NAME+op+COLOR_INFO+" ("+reason+")");
+   			logger.info("[Ban] "+"Permanent: "+p_name+" issued by "+op+" ("+reason+")");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.warning("[Ban] "+"SQL error: "+e.getLocalizedMessage());
@@ -553,7 +553,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
    			sth.setNString(5, reason);
    			sth.setNString(6, expires);
    			sth.executeUpdate();
-   			logger.info("[Ban] "+"Temporary: "+COLOR_NAME+p_name+COLOR_INFO+" until "+expires+" issued by "+COLOR_NAME+op+COLOR_INFO+" ("+reason+")");
+   			logger.info("[Ban] "+"Temporary: "+p_name+" until "+expires+" issued by "+op+" ("+reason+")");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.warning("[Ban] "+"SQL error: "+e.getLocalizedMessage());
@@ -578,7 +578,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
    			sth.setNString(4, op);
    			sth.setNString(5, reason);
    			sth.executeUpdate();
-   			logger.info("[Ban] "+"Pardon: "+COLOR_NAME+p_name+COLOR_INFO+" issued by "+COLOR_NAME+op+COLOR_INFO+" ("+reason+")");
+   			logger.info("[Ban] "+"Pardon: "+p_name+" issued by "+op+" ("+reason+")");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			logger.warning("[Ban] "+"SQL error: "+e.getLocalizedMessage());
@@ -705,7 +705,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
 	        }
    			ResultSet result = sth.executeQuery();
    			while (result.next()) {
-   				logger.info("[Ban] "+"(check) found "+result.getString("type")+" for "+COLOR_NAME+result.getString("player_name")+COLOR_INFO+" uuid="+result.getString("player_uuid")+" ip="+result.getString("player_ip"));
+   				logger.info("[Ban] "+"(check) found "+result.getString("type")+" for "+result.getString("player_name")+" uuid="+result.getString("player_uuid")+" ip="+result.getString("player_ip"));
    				if (result.getString("type").equalsIgnoreCase("permban")) {
    					message = "Banned by "+result.getString("issued_by")+": "+result.getString("reason");
    					permanent = true;
