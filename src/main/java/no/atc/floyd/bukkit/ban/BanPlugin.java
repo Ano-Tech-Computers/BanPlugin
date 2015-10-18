@@ -684,7 +684,7 @@ public class BanPlugin extends JavaPlugin implements Listener {
 //	          (settings.get("enforce_name").equalsIgnoreCase("yes") ? "OR (player_name != '' AND player_name LIKE ?) " : "") +
 	          (settings.get("enforce_uuid").equalsIgnoreCase("yes") ? "OR (player_uuid != '' AND player_uuid LIKE ?) " : "") +
 	          (settings.get("enforce_ip").equalsIgnoreCase("yes")   ? "OR (player_ip != '' AND player_ip LIKE ?) "   : "") +
-	          "AND (expires IS NULL OR expires < NOW()) " +
+	          "AND (expires IS NULL OR expires > NOW()) " +
 	          "ORDER BY issued"
 	        );
 	        Integer i = 1;
